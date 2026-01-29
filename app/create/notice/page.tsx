@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,14 +16,42 @@ interface NoticeFormData {
   attachments: File[];
 }
 
+// Mock function to get notice data
+const getNotice = (id: string) => {
+  return {
+    id,
+    title: `공지사항 ${id}`,
+    author: "관리자",
+    content: `<h1>공지사항 ${id}</h1><p>공지사항 내용입니다.</p>`,
+    attachments: [],
+  };
+};
+
 export default function CreateNoticePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const isEditMode = !!editId;
+
   const [formData, setFormData] = useState<NoticeFormData>({
     title: "",
     author: "",
     content: "",
     attachments: [],
   });
+
+  // Load existing notice data in edit mode
+  useEffect(() => {
+    if (isEditMode && editId) {
+      const existingNotice = getNotice(editId);
+      setFormData({
+        title: existingNotice.title,
+        author: existingNotice.author,
+        content: existingNotice.content,
+        attachments: existingNotice.attachments || [],
+      });
+    }
+  }, [isEditMode, editId]);
 
   const handleAttachmentsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -51,7 +79,13 @@ export default function CreateNoticePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Notice Data:", formData);
-    alert("공지사항이 저장되었습니다! (콘솔 확인)");
+    if (isEditMode) {
+      alert("공지사항이 수정되었습니다!");
+      router.push(`/notice/${editId}`);
+    } else {
+      alert("공지사항이 저장되었습니다!");
+      router.push("/notice");
+    }
   };
 
   return (
@@ -61,10 +95,12 @@ export default function CreateNoticePage() {
           {/* Header */}
           <div>
             <h1 className="font-bold text-[40px] leading-[1.3] tracking-[-1px] text-[#333] mb-2">
-              공지사항 작성
+              {isEditMode ? "공지사항 수정" : "공지사항 작성"}
             </h1>
             <p className="text-[16px] leading-[1.5] tracking-[-0.4px] text-[#666]">
-              중요한 공지사항을 작성하고 공유하세요
+              {isEditMode
+                ? "공지사항을 수정하세요"
+                : "중요한 공지사항을 작성하고 공유하세요"}
             </p>
           </div>
 
@@ -213,7 +249,7 @@ export default function CreateNoticePage() {
               type="submit"
               className="h-[48px] px-8 bg-[#004a9c] hover:bg-[#004a9c]/90 text-white rounded-[8px] text-[16px] font-medium"
             >
-              등록하기
+              {isEditMode ? "수정 완료" : "등록하기"}
             </Button>
           </div>
         </form>

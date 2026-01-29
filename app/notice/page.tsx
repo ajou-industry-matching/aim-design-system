@@ -10,7 +10,7 @@ const mockNotices = Array.from({ length: 50 }, (_, i) => ({
   number: i + 1,
   title: `Table Rowasdf`,
   date: "2025.11.13.",
-  views: Math.floor(Math.random() * 1000),
+  views: 100 + ((i * 23) % 900), // Fixed seed-based value to avoid hydration mismatch
 }));
 
 const ITEMS_PER_PAGE = 10;
@@ -22,7 +22,7 @@ export default function NoticePage() {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentNotices = mockNotices.slice(
     startIndex,
-    startIndex + ITEMS_PER_PAGE
+    startIndex + ITEMS_PER_PAGE,
   );
 
   return (
@@ -40,16 +40,16 @@ export default function NoticePage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="bg-[#f2f2f2] border-2 border-[#e5e5e5] border-b h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[70px]">
+                  <th className="bg-[#f2f2f2] border-[#e5e5e5] border-b border-t-2 h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[70px]">
                     순번
                   </th>
-                  <th className="bg-[#f2f2f2] border-2 border-[#e5e5e5] border-b border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center">
+                  <th className="bg-[#f2f2f2] border-[#e5e5e5] border-b  border-t-2 border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center">
                     제목
                   </th>
-                  <th className="bg-[#f2f2f2] border-2 border-[#e5e5e5] border-b border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[120px]">
+                  <th className="bg-[#f2f2f2] border-[#e5e5e5] border-b border-t-2 border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[120px]">
                     등록일
                   </th>
-                  <th className="bg-[#f2f2f2] border-2 border-[#e5e5e5] border-b border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[120px]">
+                  <th className="bg-[#f2f2f2] border-[#e5e5e5] border-b border-t-2  border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[120px]">
                     조회수
                   </th>
                 </tr>
@@ -74,7 +74,7 @@ export default function NoticePage() {
                     <td className="bg-white border border-[#e5e5e5] border-t-0 border-l-0 min-h-[56px] px-5 py-4 text-[#333] text-[14px] leading-[1.43] tracking-[-0.35px] text-center">
                       {notice.date}
                     </td>
-                    <td className="bg-white border border-[#e5e5e5] border-t-0 min-h-[56px] px-5 py-4 text-[#333] text-[14px] leading-[1.43] tracking-[-0.35px] text-center">
+                    <td className="bg-white border border-[#e5e5e5] border-t-0 border-r-0 min-h-[56px] px-5 py-4 text-[#333] text-[14px] leading-[1.43] tracking-[-0.35px] text-center">
                       {notice.views}
                     </td>
                   </tr>

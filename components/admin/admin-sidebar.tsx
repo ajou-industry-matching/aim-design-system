@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, FileText, Users, Building2, Flag, Settings, BarChart3 } from "lucide-react"
+import { LayoutDashboard, FileText, Users, Megaphone } from "lucide-react"
 
 const navItems = [
   {
@@ -12,9 +12,9 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "포트폴리오 관리",
-    href: "/admin/portfolios",
-    icon: FileText,
+    title: "공지사항 관리",
+    href: "/admin/notices",
+    icon: Megaphone,
   },
   {
     title: "사용자 관리",
@@ -22,24 +22,9 @@ const navItems = [
     icon: Users,
   },
   {
-    title: "조직 관리",
-    href: "/admin/organizations",
-    icon: Building2,
-  },
-  {
-    title: "신고 관리",
-    href: "/admin/reports",
-    icon: Flag,
-  },
-  {
-    title: "통계",
-    href: "/admin/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "설정",
-    href: "/admin/settings",
-    icon: Settings,
+    title: "소프콘 관리",
+    href: "/admin/portfolios",
+    icon: FileText,
   },
 ]
 
@@ -47,7 +32,7 @@ export function AdminSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 border-r bg-muted/40 p-6">
+    <aside className="w-64 border-r border-neutral-200 bg-neutral-50 p-6 min-h-screen">
       <div className="space-y-4">
         <div className="space-y-1">
           <h2 className="text-lg font-semibold">관리자 콘솔</h2>
@@ -63,11 +48,13 @@ export function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                  isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-primary-800 text-white shadow-md shadow-primary-800/20"
+                    : "text-neutral-600 hover:bg-primary-50 hover:text-primary-800",
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className={cn("h-4 w-4", isActive ? "text-white" : "text-neutral-500")} />
                 {item.title}
               </Link>
             )
