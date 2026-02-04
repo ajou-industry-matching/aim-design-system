@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Lock, Building2, User, AtSign } from "lucide-react";
@@ -14,6 +15,7 @@ export function AuthForm({
   defaultTab = "ajou",
   defaultIsSignup = false,
 }: AuthFormProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"ajou" | "company">(defaultTab);
   const [isSignup, setIsSignup] = useState(defaultIsSignup);
   const [formData, setFormData] = useState({
@@ -26,9 +28,8 @@ export function AuthForm({
   });
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log("Google login clicked");
-    alert("Google OAuth 로그인 기능은 추후 구현 예정입니다.");
+    // Redirect to the intermediate loading page
+    router.push("/auth/google-loading");
   };
 
   const handleCompanyLogin = (e: React.FormEvent) => {

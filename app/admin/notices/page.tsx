@@ -44,7 +44,7 @@ export default function AdminNoticesPage() {
   );
 
   const handleRowClick = (id: string) => {
-    router.push(`/create/notice?edit=${id}`);
+    router.push(`/admin/notices/${id}`);
   };
 
   return (

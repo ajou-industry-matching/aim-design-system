@@ -335,7 +335,7 @@ export default function CreatePortfolioPage() {
                       <img
                         src={preview}
                         alt={`Preview ${index + 1}`}
-                        className="object-cover aspect-videos"
+                        className="object-cover aspect-video"
                       />
                       <Button
                         type="button"

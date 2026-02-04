@@ -116,7 +116,7 @@ export function AppHeader() {
             {/* Admin Mode Toggle */}
             <div className="flex items-center gap-3">
               <span className="text-[12px] text-[#666]">
-                {isAdminMode ? "관리자 모드" : "일반 모드"}
+                {isAdminMode ? "관리 모드" : "일반 모드"}
               </span>
               <button
                 onClick={handleAdminModeToggle}
