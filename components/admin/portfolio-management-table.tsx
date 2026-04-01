@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreVertical, Eye, Trash2, Flag, Search } from "lucide-react"
+import { MoreVertical, Eye, Trash2, Flag, Search, Pencil } from "lucide-react"
 import { toast } from "sonner"
+import Link from "next/link"
 
 // Mock data
 const mockPortfolios = [
@@ -105,9 +106,17 @@ export function PortfolioManagementTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Eye className="mr-2 h-4 w-4" />
-                        보기
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/portfolios/${portfolio.id}`}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          관리
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/portfolio/${portfolio.id}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          보기
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Flag className="mr-2 h-4 w-4" />

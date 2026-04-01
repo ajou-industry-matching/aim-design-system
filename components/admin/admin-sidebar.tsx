@@ -22,7 +22,7 @@ const navItems = [
     icon: Users,
   },
   {
-    title: "소프콘 관리",
+    title: "포트폴리오 관리",
     href: "/admin/portfolios",
     icon: FileText,
   },

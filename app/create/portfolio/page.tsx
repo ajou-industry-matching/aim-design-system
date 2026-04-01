@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PortfolioContentEditor } from "@/components/portfolio/portfolio-content-editor";
-import { FileText, Plus, X, Upload, ImageIcon } from "lucide-react";
+import { FileText, X, Upload, ImageIcon } from "lucide-react";
 
 interface PortfolioFormData {
   title: string;
@@ -37,14 +38,19 @@ export default function CreatePortfolioPage() {
     attachments: [],
   });
 
-  const [tagInput, setTagInput] = useState("");
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [imagesPreviews, setImagesPreviews] = useState<string[]>([]);
 
-  const handleAddTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] });
-      setTagInput("");
+  const availableTags = [
+    "React", "TypeScript", "JavaScript", "Next.js", "Vue.js",
+    "Node.js", "Spring Boot", "Python", "Flutter", "Swift",
+    "Kotlin", "Docker", "AWS", "Firebase", "UI/UX",
+    "AI/ML", "데이터 분석", "블록체인", "IoT", "게임 개발",
+  ];
+
+  const handleAddTag = (tag: string) => {
+    if (!formData.tags.includes(tag)) {
+      setFormData({ ...formData, tags: [...formData.tags, tag] });
     }
   };
 
@@ -185,25 +191,22 @@ export default function CreatePortfolioPage() {
               >
                 태그
               </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="tags"
-                  placeholder="태그를 입력하세요 (예: React, TypeScript)"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), handleAddTag())
-                  }
-                  className="h-[48px] px-4 border border-[#ccc] rounded-[8px] text-[16px] flex-1"
-                />
-                <Button
-                  type="button"
-                  onClick={handleAddTag}
-                  className="h-[48px] w-[48px] px-6 bg-[#004a9c] hover:bg-[#004a9c]/90 text-white rounded-[8px]"
-                >
-                  <Plus className="w-5 h-5" />
-                </Button>
-              </div>
+              <Select onValueChange={handleAddTag}>
+                <SelectTrigger className="h-[48px] px-4 border border-[#ccc] rounded-[8px] text-[16px] w-full">
+                  <SelectValue placeholder="태그를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTags.map((tag) => (
+                    <SelectItem
+                      key={tag}
+                      value={tag}
+                      disabled={formData.tags.includes(tag)}
+                    >
+                      {tag}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {formData.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.tags.map((tag) => (

@@ -10,6 +10,9 @@ import {
   FileText,
   Download,
   Send,
+  MessageSquare,
+  Lock,
+  CornerDownRight,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
@@ -476,65 +479,231 @@ export default function PortfolioDetailPageFigma() {
                 {/* Comments Section */}
                 <div className="flex flex-col gap-5 pt-[60px]">
                   <h2 className="text-[24px] font-semibold leading-[1.33] tracking-[-0.6px] text-[#1a1a1a]">
-                    댓글 {MOCK_COMMENTS.length}
+                    댓글 6
                   </h2>
 
-                  {/* Comment Form */}
+                  {/* Comment Form with Privacy Toggle */}
                   <form className="flex flex-col gap-3">
                     <Textarea
                       placeholder="댓글을 입력하세요..."
                       rows={3}
                       className="resize-none"
                     />
-                    <div className="flex justify-end">
+                    <div className="flex items-center justify-between">
+                      {/* Privacy Toggle - inactive state */}
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#f0f0f0] text-[#999] border border-[#e5e5e5]"
+                      >
+                        <Lock className="w-3 h-3" />
+                        공개
+                        <SpecBadge num={23} />
+                      </button>
                       <Button
                         disabled
                         className="bg-[#004a9c] hover:bg-[#004a9c]/90 text-white gap-2"
                       >
                         <Send className="h-4 w-4" />
                         댓글 등록
-                         <SpecBadge num={22} />
+                        <SpecBadge num={22} />
                       </Button>
                     </div>
                   </form>
-                   <SpecBadge num={13} />
+                  <SpecBadge num={13} />
 
-                  {/* Comments List */}
-                   <div className="flex flex-col gap-4">
-                      {MOCK_COMMENTS.map((comment) => (
-                        <div
-                          key={comment.id}
-                          className="flex gap-3 p-4 border border-[#e5e5e5] rounded-lg"
-                        >
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
+                  {/* Privacy Toggle - active state preview */}
+                  <div className="flex items-center gap-4">
+                    <span className="text-[12px] text-[#999]">토글 비공개 상태:</span>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#004a9c]/10 text-[#004a9c] border border-[#004a9c]"
+                    >
+                      <Lock className="w-3 h-3" />
+                      비공개
+                      <SpecBadge num={24} />
+                    </button>
+                  </div>
+
+                  {/* Comment List */}
+                  <div className="flex flex-col gap-4">
+
+                    {/* Case 1: 공개 댓글 + 답글 */}
+                    <div className="rounded-lg border border-[#e5e5e5]">
+                      <div className="flex gap-3 p-4">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>이</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[14px] text-[#333]">
+                              이영희
+                              <SpecBadge num={15} />
+                            </span>
+                            <span className="text-[12px] text-[#999]">
+                              미디어학과
+                              <SpecBadge num={16} />
+                            </span>
+                            <span className="text-[12px] text-[#999]">
+                              · 2024. 1. 18.
+                            </span>
+                          </div>
+                          <p className="text-[14px] leading-[1.5] tracking-[-0.35px] text-[#666]">
+                            정말 인상적인 프로젝트네요! 추천 알고리즘 부분이 특히 흥미롭습니다.
+                            <SpecBadge num={17} />
+                          </p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <button type="button" className="text-[12px] text-[#999] hover:text-[#004a9c]">
+                              답글쓰기
+                              <SpecBadge num={25} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Reply inside card */}
+                      <div>
+                        <div className="flex gap-3 px-4 py-3 ml-6">
+                          <CornerDownRight className="w-4 h-4 text-[#ccc] flex-shrink-0 mt-0.5" />
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>김</AvatarFallback>
                           </Avatar>
                           <div className="flex-1 flex flex-col gap-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-[14px] text-[#333]">
-                                {comment.author.name}
-                                <SpecBadge num={15} />
+                              <span className="font-semibold text-[13px] text-[#333]">
+                                김철수
+                                <SpecBadge num={26} />
                               </span>
-                              <span className="text-[12px] text-[#999]">
-                                {comment.author.department}
-                                <SpecBadge num={16} />
+                              <span className="text-[11px] text-[#999]">
+                                소프트웨어학과
                               </span>
-                              <span className="text-[12px] text-[#999]">
-                                ·{" "}
-                                {new Date(comment.createdAt).toLocaleDateString(
-                                  "ko-KR"
-                                )}
+                              <span className="text-[11px] text-[#999]">
+                                · 2024. 1. 18.
                               </span>
                             </div>
-                            <p className="text-[14px] leading-[1.5] tracking-[-0.35px] text-[#666]">
-                              {comment.content}
-                              <SpecBadge num={17} />
+                            <p className="text-[13px] leading-[1.5] tracking-[-0.35px] text-[#666]">
+                              저도 동의합니다! 특히 데이터 처리 방식이 효율적이네요.
+                              <SpecBadge num={27} />
                             </p>
                           </div>
                         </div>
-                      ))}
-                       <SpecBadge num={14} />
+                      </div>
+                      {/* Reply Form inside card */}
+                      <div className="px-4 py-3 rounded-b-lg">
+                        <div className="flex gap-3 ml-6">
+                          <CornerDownRight className="w-4 h-4 text-[#ccc] flex-shrink-0 mt-2.5" />
+                          <div className="flex-1 flex flex-col gap-2">
+                            <Textarea
+                              placeholder="답글을 입력해 주세요..."
+                              rows={2}
+                              className="resize-none text-[14px]"
+                            />
+                            <div className="flex items-center justify-between">
+                              <button
+                                type="button"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#f0f0f0] text-[#999] border border-[#e5e5e5]"
+                              >
+                                <Lock className="w-3 h-3" />
+                                공개
+                              </button>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="button"
+                                  className="h-8 px-4 bg-white border border-[#ccc] text-[#666] hover:bg-gray-50 rounded-[8px] text-[13px]"
+                                >
+                                  취소
+                                </Button>
+                                <Button
+                                  type="button"
+                                  className="h-8 px-4 bg-[#004a9c] hover:bg-[#004a9c]/90 text-white rounded-[8px] text-[13px] gap-1.5"
+                                >
+                                  <Send className="h-3 w-3" />
+                                  답글 등록
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <SpecBadge num={28} />
+                      </div>
                     </div>
+                    <SpecBadge num={14} />
+
+                    {/* Case 2: 비공개 댓글 + 비공개 답글 (본인에게 보이는 뷰) */}
+                    <div className="rounded-lg border border-[#e5e5e5]">
+                      <div className="flex gap-3 p-4">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>김</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[14px] text-[#333]">
+                              김철수
+                            </span>
+                            <span className="text-[12px] text-[#999]">
+                              디자인학과
+                            </span>
+                            <span className="text-[12px] text-[#999]">
+                              · 2024. 1. 20.
+                            </span>
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#004a9c]/10 text-[#004a9c] text-[11px] font-medium">
+                              <Lock className="w-3 h-3" />
+                              비공개
+                              <SpecBadge num={29} />
+                            </span>
+                          </div>
+                          <p className="text-[14px] leading-[1.5] tracking-[-0.35px] text-[#666]">
+                            비공개 피드백: 코드 리뷰 관련해서 따로 연락드릴게요.
+                          </p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <button type="button" className="text-[12px] text-[#999]">
+                              답글쓰기
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Private reply */}
+                      <div>
+                        <div className="flex gap-3 px-4 py-3 ml-6">
+                          <CornerDownRight className="w-4 h-4 text-[#ccc] flex-shrink-0 mt-0.5" />
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>현</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-[13px] text-[#333]">
+                                현재 사용자
+                              </span>
+                              <span className="text-[11px] text-[#999]">
+                                소프트웨어학과
+                              </span>
+                              <span className="text-[11px] text-[#999]">
+                                · 2024. 1. 20.
+                              </span>
+                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#004a9c]/10 text-[#004a9c] text-[11px] font-medium">
+                                <Lock className="w-3 h-3" />
+                                비공개
+                              </span>
+                            </div>
+                            <p className="text-[13px] leading-[1.5] tracking-[-0.35px] text-[#666]">
+                              네, 감사합니다! 슬랙으로 연락주세요.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <SpecBadge num={30} />
+
+                    {/* Case 3: 비공개 댓글 (타인에게 보이는 뷰 - 내용 숨김) */}
+                    <div className="rounded-lg border border-[#e5e5e5]">
+                      <div className="flex items-center gap-2 p-4">
+                        <Lock className="w-4 h-4 text-[#999]" />
+                        <span className="text-[14px] text-[#999]">
+                          비공개 댓글입니다.
+                          <SpecBadge num={31} />
+                        </span>
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
               </div>
             </div>
@@ -645,8 +814,9 @@ export default function PortfolioDetailPageFigma() {
           />
           <SpecDetail
             num={14}
-            className="flex gap-3 p-4 border border-[#e5e5e5] rounded-lg"
-            label="Comment Item (Container)"
+            className="rounded-lg border border-[#e5e5e5]"
+            label="Comment Card (Container)"
+            note="답글이 같은 카드 안에 포함"
           />
           <SpecDetail
             num={15}
@@ -662,6 +832,65 @@ export default function PortfolioDetailPageFigma() {
             num={17}
             className="text-[14px] leading-[1.5] tracking-[-0.35px] text-[#666]"
             label="Comment Body"
+          />
+
+          <h4 className="text-purple-800 font-bold text-sm mt-6 mb-3 border-t-2 border-purple-300 pt-4">
+            댓글 추가 스펙
+          </h4>
+
+          <SpecDetail
+            num={23}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#f0f0f0] text-[#999] border border-[#e5e5e5]"
+            label="공개/비공개 토글 (공개 상태)"
+            note="기본 상태"
+          />
+          <SpecDetail
+            num={24}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium bg-[#004a9c]/10 text-[#004a9c] border border-[#004a9c]"
+            label="공개/비공개 토글 (비공개 상태)"
+            note="활성 상태"
+          />
+          <SpecDetail
+            num={25}
+            className="text-[12px] text-[#999] hover:text-[#004a9c]"
+            label="답글쓰기 버튼"
+            note="hover 시 primary 컬러"
+          />
+          <SpecDetail
+            num={26}
+            className="font-semibold text-[13px] text-[#333]"
+            label="Reply Author"
+            note="부모 댓글보다 1px 작음"
+          />
+          <SpecDetail
+            num={27}
+            className="text-[13px] leading-[1.5] tracking-[-0.35px] text-[#666]"
+            label="Reply Body"
+            note="부모 댓글보다 1px 작음"
+          />
+          <SpecDetail
+            num={28}
+            className="px-4 py-3 rounded-b-lg"
+            label="Reply Form (카드 내부)"
+            note="ml-6 들여쓰기, CornerDownRight 아이콘"
+          />
+          <SpecDetail
+            num={29}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#004a9c]/10 text-[#004a9c] text-[11px] font-medium"
+            label="비공개 Badge"
+            note="Lock 아이콘 + 텍스트"
+          />
+          <SpecDetail
+            num={30}
+            className="rounded-lg border border-[#e5e5e5]"
+            label="비공개 댓글 (본인 뷰)"
+            note="내용 표시 + 비공개 Badge"
+          />
+          <SpecDetail
+            num={31}
+            className="flex items-center gap-2 p-4 text-[14px] text-[#999]"
+            label="비공개 댓글 (타인 뷰)"
+            note="Lock 아이콘 + '비공개 댓글입니다.'"
           />
         </div>
       </div>

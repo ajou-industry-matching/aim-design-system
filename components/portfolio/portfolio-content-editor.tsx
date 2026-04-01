@@ -146,36 +146,34 @@ export function PortfolioContentEditor({
   onChange,
   editable = true,
 }: PortfolioContentEditorProps) {
-  if (!editable) {
-    return (
-      <div
-        className="ProseMirror"
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
-    );
-  }
+  const extensions = [
+    StarterKit.configure({
+      heading: {
+        levels: [1, 2, 3, 4, 5, 6],
+      },
+    }),
+    UpdatedImage,
+    TiptapLink.configure({
+      openOnClick: !editable,
+    }),
+    TextStyle,
+    Color,
+    ...(editable
+      ? [
+          Placeholder.configure({
+            placeholder:
+              "포트폴리오 내용을 작성해주세요... (/ 를 입력하여 명령어 메뉴를 열 수 있습니다)",
+          }),
+          slashCommand,
+        ]
+      : []),
+  ];
 
   return (
     <div className="w-full border border-border-default rounded-lg bg-white">
       <EditorRoot>
         <EditorContent
-          extensions={[
-            StarterKit.configure({
-              heading: {
-                levels: [1, 2, 3, 4, 5, 6],
-              },
-            }),
-            UpdatedImage,
-            TiptapLink.configure({
-              openOnClick: false,
-            }),
-            Placeholder.configure({
-              placeholder: "포트폴리오 내용을 작성해주세요... (/ 를 입력하여 명령어 메뉴를 열 수 있습니다)",
-            }),
-            slashCommand,
-            TextStyle,
-            Color,
-          ]}
+          extensions={extensions}
           editable={editable}
           onUpdate={({ editor }) => {
             if (onChange) {
@@ -186,35 +184,41 @@ export function PortfolioContentEditor({
             attributes: {
               class: "focus:outline-none",
             },
-            handleDOMEvents: {
-              keydown: (_view, event) => handleCommandNavigation(event),
-            },
+            ...(editable && {
+              handleDOMEvents: {
+                keydown: (_view, event) => handleCommandNavigation(event),
+              },
+            }),
           }}
           className="w-full"
         >
-          <EditorCommand className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-md border border-border bg-white px-1 py-2 shadow-md transition-all">
-            <EditorCommandEmpty className="px-2 text-muted-foreground">
-              명령어가 없습니다
-            </EditorCommandEmpty>
-            <EditorCommandList>
-              {suggestionItems.map((item) => (
-                <EditorCommandItem
-                  value={item.title}
-                  onCommand={(val) => item.command?.(val)}
-                  className="flex w-full items-center space-x-2 rounded-md px-2 py-1 text-left text-sm hover:bg-accent aria-selected:bg-accent cursor-pointer"
-                  key={item.title}
-                >
-                  <div className="flex items-center space-x-2">
-                    {item.icon}
-                    <div>
-                      <p className="font-medium">{item.title}</p>
-                      <p className="text-xs text-muted-foreground">{item.description}</p>
+          {editable && (
+            <EditorCommand className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-md border border-border bg-white px-1 py-2 shadow-md transition-all">
+              <EditorCommandEmpty className="px-2 text-muted-foreground">
+                명령어가 없습니다
+              </EditorCommandEmpty>
+              <EditorCommandList>
+                {suggestionItems.map((item) => (
+                  <EditorCommandItem
+                    value={item.title}
+                    onCommand={(val) => item.command?.(val)}
+                    className="flex w-full items-center space-x-2 rounded-md px-2 py-1 text-left text-sm hover:bg-accent aria-selected:bg-accent cursor-pointer"
+                    key={item.title}
+                  >
+                    <div className="flex items-center space-x-2">
+                      {item.icon}
+                      <div>
+                        <p className="font-medium">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </EditorCommandItem>
-              ))}
-            </EditorCommandList>
-          </EditorCommand>
+                  </EditorCommandItem>
+                ))}
+              </EditorCommandList>
+            </EditorCommand>
+          )}
         </EditorContent>
       </EditorRoot>
     </div>

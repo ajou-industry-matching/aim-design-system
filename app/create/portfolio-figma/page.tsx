@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PortfolioContentEditor } from "@/components/portfolio/portfolio-content-editor";
-import { FileText, Plus, X, Upload, ImageIcon } from "lucide-react";
+import { FileText, X, Upload, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ----------------------------------------------------------------------
@@ -259,6 +260,13 @@ interface PortfolioFormData {
   attachments: File[];
 }
 
+const availableTags = [
+  "React", "TypeScript", "JavaScript", "Next.js", "Vue.js",
+  "Node.js", "Spring Boot", "Python", "Flutter", "Swift",
+  "Kotlin", "Docker", "AWS", "Firebase", "UI/UX",
+  "AI/ML", "데이터 분석", "블록체인", "IoT", "게임 개발",
+];
+
 export default function CreatePortfolioPageFigma() {
   const [formData, setFormData] = useState<PortfolioFormData>({
     title: "",
@@ -271,6 +279,16 @@ export default function CreatePortfolioPageFigma() {
     githubUrl: "",
     attachments: [],
   });
+
+  const handleAddTag = (tag: string) => {
+    if (!formData.tags.includes(tag)) {
+      setFormData({ ...formData, tags: [...formData.tags, tag] });
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData({ ...formData, tags: formData.tags.filter((t) => t !== tagToRemove) });
+  };
 
   return (
     <div className="bg-white min-h-screen">
@@ -355,16 +373,22 @@ export default function CreatePortfolioPageFigma() {
                       태그
                     </Label>
                     <div className="flex gap-2 items-center">
-                      <Input
-                        placeholder="태그를 입력하세요"
-                        className="h-[48px] px-4 border border-[#ccc] rounded-[8px] text-[16px] flex-1"
-                      />
-                      <Button
-                        type="button"
-                        className="h-[48px] w-[48px] bg-[#004a9c] text-white rounded-[8px]"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </Button>
+                      <Select onValueChange={handleAddTag}>
+                        <SelectTrigger className="h-[48px] px-4 border border-[#ccc] rounded-[8px] text-[16px] w-full flex-1">
+                          <SelectValue placeholder="태그를 선택하세요" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableTags.map((tag) => (
+                            <SelectItem
+                              key={tag}
+                              value={tag}
+                              disabled={formData.tags.includes(tag)}
+                            >
+                              {tag}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <SpecBadge num={7} />
                     </div>
 
@@ -375,7 +399,10 @@ export default function CreatePortfolioPageFigma() {
                             key={tag}
                             className="flex items-center gap-2 px-3 py-1 bg-[#f0f0f0] text-[#333] rounded-full border border-[#003876]"
                           >
-                            #{tag} <X className="h-3 w-3" />
+                            #{tag}
+                            <button type="button" onClick={() => handleRemoveTag(tag)}>
+                              <X className="h-3 w-3" />
+                            </button>
                           </Badge>
                         ))}
                         <SpecBadge num={8} />
@@ -647,9 +674,9 @@ export default function CreatePortfolioPageFigma() {
           />
           <SpecDetail
             num={7}
-            className="flex gap-2"
-            label="Input + Button Row"
-            note="gap-2 (8px)"
+            className="h-[48px] px-4 border border-[#ccc] rounded-[8px] text-[16px] w-full"
+            label="Tag Select"
+            note="셀렉트 박스로 태그 선택"
           />
           <SpecDetail
             num={8}

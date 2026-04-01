@@ -10,8 +10,9 @@ import {
   ExternalLink,
   FileText,
   Download,
-  MessageSquare,
   Send,
+  Lock,
+  CornerDownRight,
 } from "lucide-react";
 import { PortfolioContentEditor } from "@/components/portfolio/portfolio-content-editor";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,8 +43,23 @@ const MOCK_ATTACHMENTS = [
   },
 ];
 
+// Comment type
+type Comment = {
+  id: string;
+  author: {
+    name: string;
+    avatar: string;
+    department: string;
+  };
+  content: string;
+  createdAt: string;
+  isPrivate: boolean;
+  isHidden?: boolean;
+  replies: Comment[];
+};
+
 // Mock comments data
-const MOCK_COMMENTS = [
+const MOCK_COMMENTS: Comment[] = [
   {
     id: "1",
     author: {
@@ -54,6 +70,21 @@ const MOCK_COMMENTS = [
     content:
       "정말 인상적인 프로젝트네요! 추천 알고리즘 부분이 특히 흥미롭습니다.",
     createdAt: "2024-01-18",
+    isPrivate: false,
+    replies: [
+      {
+        id: "1-1",
+        author: {
+          name: "김철수",
+          avatar: "/placeholder-user.jpg",
+          department: "소프트웨어학과",
+        },
+        content: "저도 동의합니다! 특히 데이터 처리 방식이 효율적이네요.",
+        createdAt: "2024-01-18",
+        isPrivate: false,
+        replies: [],
+      },
+    ],
   },
   {
     id: "2",
@@ -65,6 +96,8 @@ const MOCK_COMMENTS = [
     content:
       "UI/UX도 깔끔하고 기능도 잘 구현되어 있네요. 많은 도움이 되었습니다!",
     createdAt: "2024-01-19",
+    isPrivate: false,
+    replies: [],
   },
   {
     id: "3",
@@ -74,8 +107,36 @@ const MOCK_COMMENTS = [
       department: "디자인학과",
     },
     content:
-      "실시간 분석 기능이 정말 유용할 것 같아요. 실제로 사용해보고 싶네요!",
+      "비공개 피드백: 코드 리뷰 관련해서 따로 연락드릴게요.",
     createdAt: "2024-01-20",
+    isPrivate: true,
+    replies: [
+      {
+        id: "3-1",
+        author: {
+          name: "현재 사용자",
+          avatar: "/placeholder-user.jpg",
+          department: "소프트웨어학과",
+        },
+        content: "네, 감사합니다! 슬랙으로 연락주세요.",
+        createdAt: "2024-01-20",
+        isPrivate: true,
+        replies: [],
+      },
+    ],
+  },
+  {
+    id: "4",
+    author: {
+      name: "익명",
+      avatar: "",
+      department: "",
+    },
+    content: "비공개 댓글입니다.",
+    createdAt: "2024-01-21",
+    isPrivate: true,
+    isHidden: true,
+    replies: [],
   },
 ];
 
@@ -200,6 +261,181 @@ const getPortfolio = async (id: string) => {
   };
 };
 
+// --- Comment Item Component ---
+function CommentItemUI({
+  comment,
+  replyingTo,
+  replyContent,
+  isPrivateReply,
+  isSubmitting,
+  onReplyClick,
+  onReplyContentChange,
+  onPrivateReplyToggle,
+  onReplySubmit,
+  onReplyCancel,
+}: {
+  comment: Comment;
+  replyingTo: string | null;
+  replyContent: string;
+  isPrivateReply: boolean;
+  isSubmitting: boolean;
+  onReplyClick: (id: string) => void;
+  onReplyContentChange: (content: string) => void;
+  onPrivateReplyToggle: () => void;
+  onReplySubmit: (parentId: string) => void;
+  onReplyCancel: () => void;
+}) {
+  const isReplying = replyingTo === comment.id;
+
+  // 비공개 댓글이 다른 사용자에게 보일 때 (내용 숨김)
+  if (comment.isHidden) {
+    return (
+      <div className="rounded-lg border border-[#e5e5e5]">
+        <div className="flex items-center gap-2 p-4">
+          <Lock className="w-4 h-4 text-[#999]" />
+          <span className="text-[14px] text-[#999]">
+            비공개 댓글입니다.
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-[#e5e5e5]">
+      {/* Parent Comment */}
+      <div className="flex gap-3 p-4">
+        <Avatar className="h-10 w-10 flex-shrink-0">
+          <AvatarImage src={comment.author.avatar} />
+          <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1 flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-[14px] text-[#333]">
+              {comment.author.name}
+            </span>
+            <span className="text-[12px] text-[#999]">
+              {comment.author.department}
+            </span>
+            <span className="text-[12px] text-[#999]">
+              · {new Date(comment.createdAt).toLocaleDateString("ko-KR")}
+            </span>
+            {comment.isPrivate && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#004a9c]/10 text-[#004a9c] text-[11px] font-medium">
+                <Lock className="w-3 h-3" />
+                비공개
+              </span>
+            )}
+          </div>
+          <p className="text-[14px] leading-[1.5] tracking-[-0.35px] text-[#666]">
+            {comment.content}
+          </p>
+          <div className="flex items-center gap-3 mt-1">
+            <button
+              type="button"
+              onClick={() => onReplyClick(comment.id)}
+              className="text-[12px] text-[#999] hover:text-[#004a9c] transition-colors"
+            >
+              답글쓰기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Replies inside same card */}
+      {comment.replies.length > 0 && (
+        <div>
+          {comment.replies.map((reply) => (
+            <div
+              key={reply.id}
+              className="flex gap-3 px-4 py-3 ml-6"
+            >
+              <CornerDownRight className="w-4 h-4 text-[#ccc] flex-shrink-0 mt-0.5" />
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                <AvatarImage src={reply.author.avatar} />
+                <AvatarFallback>{reply.author.name[0]}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-[13px] text-[#333]">
+                    {reply.author.name}
+                  </span>
+                  <span className="text-[11px] text-[#999]">
+                    {reply.author.department}
+                  </span>
+                  <span className="text-[11px] text-[#999]">
+                    · {new Date(reply.createdAt).toLocaleDateString("ko-KR")}
+                  </span>
+                  {reply.isPrivate && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#004a9c]/10 text-[#004a9c] text-[11px] font-medium">
+                      <Lock className="w-3 h-3" />
+                      비공개
+                    </span>
+                  )}
+                </div>
+                <p className="text-[13px] leading-[1.5] tracking-[-0.35px] text-[#666]">
+                  {reply.content}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Reply Form inside same card */}
+      {isReplying && (
+        <div className="px-4 py-3 rounded-b-lg">
+          <div className="flex gap-3 ml-6">
+            <CornerDownRight className="w-4 h-4 text-[#ccc] flex-shrink-0 mt-2.5" />
+            <div className="flex-1 flex flex-col gap-2">
+              <Textarea
+                placeholder="답글을 입력해 주세요..."
+                value={replyContent}
+                onChange={(e) => onReplyContentChange(e.target.value)}
+                rows={2}
+                className="resize-none text-[14px]"
+              />
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={onPrivateReplyToggle}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
+                    isPrivateReply
+                      ? "bg-[#004a9c]/10 text-[#004a9c] border border-[#004a9c]"
+                      : "bg-[#f0f0f0] text-[#999] border border-[#e5e5e5]"
+                  }`}
+                >
+                  <Lock className="w-3 h-3" />
+                  {isPrivateReply ? "비공개" : "공개"}
+                </button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={onReplyCancel}
+                    disabled={isSubmitting}
+                    className="h-8 px-4 bg-white border border-[#ccc] text-[#666] hover:bg-gray-50 rounded-[8px] text-[13px]"
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => onReplySubmit(comment.id)}
+                    disabled={isSubmitting}
+                    className="h-8 px-4 bg-[#004a9c] hover:bg-[#004a9c]/90 text-white rounded-[8px] text-[13px] gap-1.5"
+                  >
+                    <Send className="h-3 w-3" />
+                    {isSubmitting ? "등록 중..." : "답글 등록"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PortfolioDetailPage({
   params,
 }: {
@@ -214,9 +450,13 @@ export default function PortfolioDetailPage({
   const [markdownContent, setMarkdownContent] = useState(
     SAMPLE_MARKDOWN_CONTENT
   );
-  const [comments, setComments] = useState(MOCK_COMMENTS);
+  const [comments, setComments] = useState<Comment[]>(MOCK_COMMENTS);
   const [newComment, setNewComment] = useState("");
+  const [isPrivateComment, setIsPrivateComment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [isPrivateReply, setIsPrivateReply] = useState(false);
 
   // Refs for scroll
   const introRef = useRef<HTMLDivElement>(null);
@@ -290,10 +530,9 @@ export default function PortfolioDetailPage({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const comment = {
+      const comment: Comment = {
         id: Date.now().toString(),
         author: {
           name: "현재 사용자",
@@ -302,10 +541,13 @@ export default function PortfolioDetailPage({
         },
         content: newComment,
         createdAt: new Date().toISOString().split("T")[0],
+        isPrivate: isPrivateComment,
+        replies: [],
       };
 
       setComments([comment, ...comments]);
       setNewComment("");
+      setIsPrivateComment(false);
       alert("댓글이 등록되었습니다");
     } catch (error) {
       alert("댓글 등록에 실패했습니다");
@@ -313,6 +555,52 @@ export default function PortfolioDetailPage({
       setIsSubmitting(false);
     }
   };
+
+  const handleReplySubmit = async (parentId: string) => {
+    if (!replyContent.trim()) {
+      alert("답글 내용을 입력해주세요");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const reply: Comment = {
+        id: `${parentId}-${Date.now()}`,
+        author: {
+          name: "현재 사용자",
+          avatar: "/placeholder-user.jpg",
+          department: "소프트웨어학과",
+        },
+        content: replyContent,
+        createdAt: new Date().toISOString().split("T")[0],
+        isPrivate: isPrivateReply,
+        replies: [],
+      };
+
+      const addReply = (list: Comment[]): Comment[] =>
+        list.map((c) =>
+          c.id === parentId
+            ? { ...c, replies: [...c.replies, reply] }
+            : { ...c, replies: addReply(c.replies) }
+        );
+
+      setComments(addReply(comments));
+      setReplyContent("");
+      setReplyingTo(null);
+      setIsPrivateReply(false);
+      alert("답글이 등록되었습니다");
+    } catch (error) {
+      alert("답글 등록에 실패했습니다");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const countTotalComments = (list: Comment[]): number =>
+    list.reduce((sum, c) => sum + 1 + countTotalComments(c.replies), 0);
 
   return (
     <div className="bg-white min-h-screen">
@@ -422,7 +710,7 @@ export default function PortfolioDetailPage({
                   : "border-b-2 border-[#e5e5e5] text-[#666]"
               }`}
             >
-              댓글 {comments.length}
+              댓글 {countTotalComments(comments)}
             </button>
           </div>
         </div>
@@ -532,7 +820,7 @@ export default function PortfolioDetailPage({
           {/* Comments Section */}
           <div ref={commentsRef} className="flex flex-col gap-5 pt-[60px]">
             <h2 className="text-[24px] font-semibold leading-[1.33] tracking-[-0.6px] text-[#1a1a1a]">
-              댓글 {comments.length}
+              댓글 {countTotalComments(comments)}
             </h2>
 
             {/* Comment Form */}
@@ -547,7 +835,19 @@ export default function PortfolioDetailPage({
                 rows={3}
                 className="resize-none"
               />
-              <div className="flex justify-end">
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setIsPrivateComment(!isPrivateComment)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
+                    isPrivateComment
+                      ? "bg-[#004a9c]/10 text-[#004a9c] border border-[#004a9c]"
+                      : "bg-[#f0f0f0] text-[#999] border border-[#e5e5e5]"
+                  }`}
+                >
+                  <Lock className="w-3 h-3" />
+                  {isPrivateComment ? "비공개" : "공개"}
+                </button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
@@ -563,34 +863,27 @@ export default function PortfolioDetailPage({
             {comments.length > 0 ? (
               <div className="flex flex-col gap-4">
                 {comments.map((comment) => (
-                  <div
+                  <CommentItemUI
                     key={comment.id}
-                    className="flex gap-3 p-4 border border-[#e5e5e5] rounded-lg"
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={comment.author.avatar} />
-                      <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[14px] text-[#333]">
-                          {comment.author.name}
-                        </span>
-                        <span className="text-[12px] text-[#999]">
-                          {comment.author.department}
-                        </span>
-                        <span className="text-[12px] text-[#999]">
-                          ·{" "}
-                          {new Date(comment.createdAt).toLocaleDateString(
-                            "ko-KR"
-                          )}
-                        </span>
-                      </div>
-                      <p className="text-[14px] leading-[1.5] tracking-[-0.35px] text-[#666]">
-                        {comment.content}
-                      </p>
-                    </div>
-                  </div>
+                    comment={comment}
+                    replyingTo={replyingTo}
+                    replyContent={replyContent}
+                    isPrivateReply={isPrivateReply}
+                    isSubmitting={isSubmitting}
+                    onReplyClick={(id) => {
+                      setReplyingTo(replyingTo === id ? null : id);
+                      setReplyContent("");
+                      setIsPrivateReply(false);
+                    }}
+                    onReplyContentChange={setReplyContent}
+                    onPrivateReplyToggle={() => setIsPrivateReply(!isPrivateReply)}
+                    onReplySubmit={handleReplySubmit}
+                    onReplyCancel={() => {
+                      setReplyingTo(null);
+                      setReplyContent("");
+                      setIsPrivateReply(false);
+                    }}
+                  />
                 ))}
               </div>
             ) : (
