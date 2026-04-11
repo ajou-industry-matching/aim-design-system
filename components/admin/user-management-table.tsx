@@ -14,23 +14,100 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 
-// Mock data
-const mockUsers = Array.from({ length: 50 }, (_, i) => ({
-  id: String(i + 1),
-  name: `사용자${i + 1}`,
-  email: `user${i + 1}@ajou.ac.kr`,
-  role: i < 3 ? "관리자" : i < 10 ? "교수" : i < 30 ? "학생" : "기업",
-  portfolios: Math.floor((i * 7 + 3) % 20),
-  lastActivity: new Date(
-    2025,
-    0,
-    20 - (i % 30)
-  ).toLocaleDateString("ko-KR"),
-  joinedAt: new Date(2023 + (i % 2), (i % 12), (i % 28) + 1).toLocaleDateString(
-    "ko-KR"
-  ),
-  status: i % 10 === 0 ? "비정상" : "정상",
-}));
+// ─────────────────────────────────────────────
+// 권한 모델
+//  baseRole  : 학생 | 교수 | 기업 | null (슈퍼관리자는 null)
+//  adminRole : "슈퍼관리자" | "일반관리자" | null
+// ─────────────────────────────────────────────
+export type BaseRole = "학생" | "교수" | "기업";
+export type AdminRole = "슈퍼관리자" | "일반관리자";
+
+export type MockUser = {
+  id: string;
+  name: string;
+  email: string;
+  baseRole: BaseRole | null;
+  adminRole: AdminRole | null;
+  portfolios: number;
+  lastActivity: string;
+  joinedAt: string;
+  status: "정상" | "비정상";
+};
+
+// 샘플 데이터
+export const mockUsers: MockUser[] = Array.from({ length: 50 }, (_, i) => {
+  const adminRole: AdminRole | null =
+    i === 0
+      ? "슈퍼관리자"
+      : i === 1
+        ? "슈퍼관리자"
+        : i < 6
+          ? "일반관리자"
+          : null;
+
+  const baseRole: BaseRole | null =
+    adminRole === "슈퍼관리자"
+      ? null
+      : i < 10
+        ? "교수"
+        : i < 30
+          ? "학생"
+          : "기업";
+
+  return {
+    id: String(i + 1),
+    name: `사용자${i + 1}`,
+    email: `user${i + 1}@ajou.ac.kr`,
+    baseRole,
+    adminRole,
+    portfolios: Math.floor((i * 7 + 3) % 20),
+    lastActivity: new Date(2025, 0, 20 - (i % 30)).toLocaleDateString("ko-KR"),
+    joinedAt: new Date(
+      2023 + (i % 2),
+      i % 12,
+      (i % 28) + 1
+    ).toLocaleDateString("ko-KR"),
+    status: i % 10 === 0 ? "비정상" : "정상",
+  };
+});
+
+// 권한 컬럼: 슈퍼관리자 | 교수 | 학생 | 기업
+function RoleBadge({ user }: { user: MockUser }) {
+  if (user.adminRole === "슈퍼관리자") {
+    return (
+      <span className="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-semibold bg-red-500/10 text-red-600">
+        슈퍼관리자
+      </span>
+    );
+  }
+  const colorClass =
+    user.baseRole === "교수"
+      ? "bg-[#004a9c]/10 text-[#004a9c]"
+      : user.baseRole === "학생"
+        ? "bg-green-500/10 text-green-600"
+        : "bg-purple-500/10 text-purple-600";
+
+  return (
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium ${colorClass}`}>
+      {user.baseRole}
+    </span>
+  );
+}
+
+// 관리자 여부 컬럼
+function AdminBadge({ isAdmin }: { isAdmin: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-semibold ${
+        isAdmin
+          ? "bg-amber-500/10 text-amber-700"
+          : "bg-[#f2f2f2] text-[#aaa]"
+      }`}
+    >
+      {isAdmin ? "Y" : "N"}
+    </span>
+  );
+}
 
 const ITEMS_PER_PAGE = 10;
 
@@ -47,14 +124,7 @@ export function UserManagementTable() {
 
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentUsers = filteredUsers.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
-
-  const handleRowClick = (userId: string) => {
-    router.push(`/admin/users/${userId}`);
-  };
+  const currentUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-4">
@@ -85,8 +155,11 @@ export function UserManagementTable() {
               <TableHead className="bg-[#f2f2f2] border-[#e5e5e5] border-b border-t-2 border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center">
                 이메일
               </TableHead>
-              <TableHead className="bg-[#f2f2f2] border-[#e5e5e5] border-b border-t-2 border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[100px]">
+              <TableHead className="bg-[#f2f2f2] border-[#e5e5e5] border-b border-t-2 border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[120px]">
                 권한
+              </TableHead>
+              <TableHead className="bg-[#f2f2f2] border-[#e5e5e5] border-b border-t-2 border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[110px]">
+                관리자 여부
               </TableHead>
               <TableHead className="bg-[#f2f2f2] border-[#e5e5e5] border-b border-t-2 border-l h-12 px-5 py-3 text-[#333] text-[16px] font-semibold leading-[1.5] tracking-[-0.4px] text-center w-[120px]">
                 게시글
@@ -106,7 +179,7 @@ export function UserManagementTable() {
             {currentUsers.map((user) => (
               <TableRow
                 key={user.id}
-                onClick={() => handleRowClick(user.id)}
+                onClick={() => router.push(`/admin/users/${user.id}`)}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <TableCell className="bg-white border border-[#e5e5e5] border-t-0 border-l-0 min-h-[56px] px-5 py-4 text-[#333] text-[14px] leading-[1.43] tracking-[-0.35px] text-center">
@@ -116,19 +189,10 @@ export function UserManagementTable() {
                   {user.email}
                 </TableCell>
                 <TableCell className="bg-white border border-[#e5e5e5] border-t-0 border-l-0 min-h-[56px] px-5 py-4 text-center">
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium ${
-                      user.role === "관리자"
-                        ? "bg-red-500/10 text-red-500"
-                        : user.role === "교수"
-                        ? "bg-[#004a9c]/10 text-[#004a9c]"
-                        : user.role === "학생"
-                        ? "bg-green-500/10 text-green-500"
-                        : "bg-purple-500/10 text-purple-500"
-                    }`}
-                  >
-                    {user.role}
-                  </span>
+                  <RoleBadge user={user} />
+                </TableCell>
+                <TableCell className="bg-white border border-[#e5e5e5] border-t-0 border-l-0 min-h-[56px] px-5 py-4 text-center">
+                  <AdminBadge isAdmin={user.adminRole !== null} />
                 </TableCell>
                 <TableCell className="bg-white border border-[#e5e5e5] border-t-0 border-l-0 min-h-[56px] px-5 py-4 text-[#333] text-[14px] leading-[1.43] tracking-[-0.35px] text-center">
                   {user.portfolios}
@@ -143,7 +207,7 @@ export function UserManagementTable() {
                   <span
                     className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium ${
                       user.status === "정상"
-                        ? "bg-green-500/10 text-green-500"
+                        ? "bg-green-500/10 text-green-600"
                         : "bg-red-500/10 text-red-500"
                     }`}
                   >

@@ -27,41 +27,48 @@ const stats = [
   },
 ];
 
-// Mock recent users
+// Mock recent users — 새 권한 모델 반영
+// adminRole: "슈퍼관리자" | "일반관리자" | null
+// baseRole : "학생" | "교수" | "기업" | null (슈퍼관리자는 null)
 const recentUsers = [
   {
     id: "1",
     name: "김철수",
     email: "user1@ajou.ac.kr",
-    role: "학생",
+    baseRole: null as string | null,
+    adminRole: "슈퍼관리자" as string | null,
     date: "2025.01.20",
   },
   {
     id: "2",
     name: "이영희",
     email: "user2@ajou.ac.kr",
-    role: "교수",
+    baseRole: "교수",
+    adminRole: "일반관리자",
     date: "2025.01.19",
   },
   {
     id: "3",
     name: "박민수",
     email: "user3@ajou.ac.kr",
-    role: "학생",
+    baseRole: "학생",
+    adminRole: null,
     date: "2025.01.19",
   },
   {
     id: "4",
     name: "최지원",
     email: "user4@ajou.ac.kr",
-    role: "기업",
+    baseRole: "기업",
+    adminRole: null,
     date: "2025.01.18",
   },
   {
     id: "5",
     name: "정서연",
     email: "user5@ajou.ac.kr",
-    role: "학생",
+    baseRole: "학생",
+    adminRole: "일반관리자",
     date: "2025.01.18",
   },
 ];
@@ -176,17 +183,34 @@ export default function AdminDashboardPage() {
                       {user.email}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    {/* 역할 뱃지: 슈퍼관리자 | 교수 | 학생 | 기업 */}
+                    {user.adminRole === "슈퍼관리자" ? (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-semibold bg-red-500/10 text-red-600">
+                        슈퍼관리자
+                      </span>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium ${
+                          user.baseRole === "교수"
+                            ? "bg-[#004a9c]/10 text-[#004a9c]"
+                            : user.baseRole === "학생"
+                              ? "bg-green-500/10 text-green-600"
+                              : "bg-purple-500/10 text-purple-600"
+                        }`}
+                      >
+                        {user.baseRole}
+                      </span>
+                    )}
+                    {/* 관리자 여부 */}
                     <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium ${
-                        user.role === "교수"
-                          ? "bg-[#004a9c]/10 text-[#004a9c]"
-                          : user.role === "학생"
-                            ? "bg-green-500/10 text-green-500"
-                            : "bg-purple-500/10 text-purple-500"
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                        user.adminRole !== null
+                          ? "bg-amber-500/10 text-amber-700"
+                          : "bg-[#f2f2f2] text-[#aaa]"
                       }`}
                     >
-                      {user.role}
+                      {user.adminRole !== null ? "관리자 Y" : "관리자 N"}
                     </span>
                     <span className="text-[12px] leading-[1.33] tracking-[-0.3px] text-[#999]">
                       {user.date}

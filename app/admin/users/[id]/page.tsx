@@ -6,45 +6,85 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Trash2 } from "lucide-react";
+import {
+  mockUsers,
+  type BaseRole,
+  type AdminRole,
+  type MockUser,
+} from "@/components/admin/user-management-table";
 
-// Mock user data
-const getMockUser = (id: string) => ({
-  id,
-  name: `사용자${id}`,
-  email: `user${id}@ajou.ac.kr`,
-  role: parseInt(id) < 3 ? "관리자" : parseInt(id) < 10 ? "교수" : parseInt(id) < 30 ? "학생" : "기업",
-  portfolios: Math.floor((parseInt(id) * 7 + 3) % 20),
-  lastActivity: new Date(2025, 0, 20 - (parseInt(id) % 30)).toLocaleDateString("ko-KR"),
-  joinedAt: new Date(2023 + (parseInt(id) % 2), (parseInt(id) % 12), (parseInt(id) % 28) + 1).toLocaleDateString("ko-KR"),
-  status: parseInt(id) % 10 === 0 ? "비정상" : "정상",
-});
+// 현재 로그인한 관리자 (실제 서비스에서는 auth context에서 가져옴)
+const CURRENT_ADMIN_ROLE: AdminRole = "슈퍼관리자";
+
+function getMockUser(id: string): MockUser {
+  const found = mockUsers.find((u) => u.id === id);
+  if (found) return { ...found };
+  return {
+    id,
+    name: `사용자${id}`,
+    email: `user${id}@ajou.ac.kr`,
+    baseRole: "학생",
+    adminRole: null,
+    portfolios: 0,
+    lastActivity: new Date(2025, 0, 1).toLocaleDateString("ko-KR"),
+    joinedAt: new Date(2023, 0, 1).toLocaleDateString("ko-KR"),
+    status: "정상",
+  };
+}
+
+// 셀렉트 공통 스타일
+const selectClass =
+  "h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:opacity-50";
 
 export default function UserDetailPage() {
   const router = useRouter();
   const params = useParams();
   const userId = params.id as string;
 
-  const [user, setUser] = useState(getMockUser(userId));
+  const [user, setUser] = useState<MockUser>(getMockUser(userId));
   const [isEditing, setIsEditing] = useState(false);
 
+  const isSuperAdmin = CURRENT_ADMIN_ROLE === "슈퍼관리자";
+
+  // 역할 셀렉트 값: 슈퍼관리자면 "슈퍼관리자", 아니면 baseRole
+  const roleSelectValue =
+    user.adminRole === "슈퍼관리자" ? "슈퍼관리자" : (user.baseRole ?? "학생");
+
+  // 관리자 유형 셀렉트 값: 일반관리자 여부
+  const adminTypeValue: "없음" | "일반관리자" =
+    user.adminRole === "일반관리자" ? "일반관리자" : "없음";
+
+  const handleRoleChange = (value: string) => {
+    if (value === "슈퍼관리자") {
+      setUser({ ...user, adminRole: "슈퍼관리자", baseRole: null });
+    } else {
+      // 슈퍼관리자에서 일반 역할로 변경 시 adminRole 초기화
+      const newAdminRole =
+        user.adminRole === "슈퍼관리자" ? null : user.adminRole;
+      setUser({ ...user, baseRole: value as BaseRole, adminRole: newAdminRole });
+    }
+  };
+
+  const handleAdminTypeChange = (value: string) => {
+    setUser({
+      ...user,
+      adminRole: value === "일반관리자" ? "일반관리자" : null,
+    });
+  };
+
   const handleSave = () => {
-    // TODO: API 호출로 사용자 업데이트
     setIsEditing(false);
     alert("사용자 정보가 저장되었습니다.");
   };
 
   const handleDelete = () => {
     if (confirm("정말로 이 사용자를 삭제하시겠습니까?")) {
-      // TODO: API 호출로 사용자 삭제
       router.push("/admin/users");
     }
   };
 
   const handleStatusToggle = () => {
-    setUser({
-      ...user,
-      status: user.status === "정상" ? "비정상" : "정상",
-    });
+    setUser({ ...user, status: user.status === "정상" ? "비정상" : "정상" });
   };
 
   return (
@@ -61,9 +101,7 @@ export default function UserDetailPage() {
             <ArrowLeft size={20} />
           </Button>
           <div>
-            <h1 className="text-[32px] font-bold text-[#111]">
-              사용자 상세 정보
-            </h1>
+            <h1 className="text-[32px] font-bold text-[#111]">사용자 상세 정보</h1>
             <p className="text-[14px] text-[#666]">
               사용자 정보를 조회하고 수정할 수 있습니다.
             </p>
@@ -73,15 +111,18 @@ export default function UserDetailPage() {
           {isEditing ? (
             <>
               <Button
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  setUser(getMockUser(userId));
+                  setIsEditing(false);
+                }}
                 variant="outline"
-                className="border border-[#e5e5e5] text-[#111] hover:bg-[#f5f5f5] h-[40px] rounded-lg px-6 py-[10px] text-[14px] font-medium leading-[1.43] tracking-[-0.35px]"
+                className="border border-[#e5e5e5] text-[#111] hover:bg-[#f5f5f5] h-[40px] rounded-lg px-6 text-[14px] font-medium"
               >
                 취소
               </Button>
               <Button
                 onClick={handleSave}
-                className="bg-[#004a9c] hover:bg-[#004a9c]/90 text-white h-[40px] rounded-lg px-6 py-[10px] text-[14px] font-medium leading-[1.43] tracking-[-0.35px]"
+                className="bg-[#004a9c] hover:bg-[#004a9c]/90 text-white h-[40px] rounded-lg px-6 text-[14px] font-medium"
               >
                 저장
               </Button>
@@ -89,7 +130,7 @@ export default function UserDetailPage() {
           ) : (
             <Button
               onClick={() => setIsEditing(true)}
-              className="bg-[#004a9c] hover:bg-[#004a9c]/90 text-white h-[40px] rounded-lg px-6 py-[10px] text-[14px] font-medium leading-[1.43] tracking-[-0.35px]"
+              className="bg-[#004a9c] hover:bg-[#004a9c]/90 text-white h-[40px] rounded-lg px-6 text-[14px] font-medium"
             >
               수정
             </Button>
@@ -97,7 +138,7 @@ export default function UserDetailPage() {
           <Button
             onClick={handleDelete}
             variant="outline"
-            className="border border-red-500 text-red-500 hover:bg-red-500/5 h-[40px] rounded-lg px-6 py-[10px] text-[14px] font-medium leading-[1.43] tracking-[-0.35px] gap-2"
+            className="border border-red-500 text-red-500 hover:bg-red-500/5 h-[40px] rounded-lg px-6 text-[14px] font-medium gap-2"
           >
             <Trash2 size={18} />
             삭제
@@ -105,11 +146,9 @@ export default function UserDetailPage() {
         </div>
       </div>
 
-      {/* User Information */}
+      {/* Basic Info Card */}
       <div className="bg-white border border-[#e5e5e5] rounded-lg p-8">
-        <h2 className="text-[20px] font-semibold text-[#111] mb-6">
-          기본 정보
-        </h2>
+        <h2 className="text-[20px] font-semibold text-[#111] mb-6">기본 정보</h2>
         <div className="grid grid-cols-2 gap-6">
           {/* Name */}
           <div className="space-y-2">
@@ -134,66 +173,73 @@ export default function UserDetailPage() {
             />
           </div>
 
-          {/* Role */}
+          {/* 역할 */}
           <div className="space-y-2">
-            <Label htmlFor="role">권한</Label>
+            <Label htmlFor="role">역할</Label>
             <select
               id="role"
-              value={user.role}
-              onChange={(e) => setUser({ ...user, role: e.target.value })}
+              value={roleSelectValue}
+              onChange={(e) => handleRoleChange(e.target.value)}
               disabled={!isEditing}
-              className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:opacity-50"
+              className={selectClass}
             >
               <option value="학생">학생</option>
               <option value="교수">교수</option>
               <option value="기업">기업</option>
-              <option value="관리자">관리자</option>
+              <option value="슈퍼관리자">슈퍼관리자</option>
             </select>
+          </div>
+
+          {/* 관리자 유형 — 슈퍼관리자만 편집 가능, 슈퍼관리자 역할 선택 시 비활성화 */}
+          <div className="space-y-2">
+            <Label htmlFor="adminType">
+              관리자 권한
+              {!isSuperAdmin && (
+                <span className="ml-2 text-[11px] text-[#aaa] font-normal">
+                  (슈퍼관리자만 변경 가능)
+                </span>
+              )}
+            </Label>
+            <select
+              id="adminType"
+              value={adminTypeValue}
+              onChange={(e) => handleAdminTypeChange(e.target.value)}
+              disabled={!isEditing || !isSuperAdmin || user.adminRole === "슈퍼관리자"}
+              className={selectClass}
+            >
+              <option value="없음">없음</option>
+              <option value="일반관리자">일반관리자</option>
+            </select>
+            {user.adminRole === "슈퍼관리자" && isEditing && (
+              <p className="text-[11px] text-[#aaa]">
+                슈퍼관리자는 역할에서 직접 변경하세요.
+              </p>
+            )}
           </div>
 
           {/* Portfolios */}
           <div className="space-y-2">
             <Label htmlFor="portfolios">게시글 수</Label>
-            <Input
-              id="portfolios"
-              value={user.portfolios}
-              disabled
-              className="bg-[#f5f5f5]"
-            />
+            <Input id="portfolios" value={user.portfolios} disabled className="bg-[#f5f5f5]" />
           </div>
 
           {/* Last Activity */}
           <div className="space-y-2">
             <Label htmlFor="lastActivity">마지막 활동</Label>
-            <Input
-              id="lastActivity"
-              value={user.lastActivity}
-              disabled
-              className="bg-[#f5f5f5]"
-            />
+            <Input id="lastActivity" value={user.lastActivity} disabled className="bg-[#f5f5f5]" />
           </div>
 
           {/* Joined At */}
           <div className="space-y-2">
             <Label htmlFor="joinedAt">가입일</Label>
-            <Input
-              id="joinedAt"
-              value={user.joinedAt}
-              disabled
-              className="bg-[#f5f5f5]"
-            />
+            <Input id="joinedAt" value={user.joinedAt} disabled className="bg-[#f5f5f5]" />
           </div>
 
           {/* Status */}
           <div className="space-y-2">
             <Label htmlFor="status">상태</Label>
             <div className="flex items-center gap-3">
-              <Input
-                id="status"
-                value={user.status}
-                disabled
-                className="bg-[#f5f5f5]"
-              />
+              <Input id="status" value={user.status} disabled className="bg-[#f5f5f5]" />
               {isEditing && (
                 <Button
                   onClick={handleStatusToggle}
@@ -213,12 +259,7 @@ export default function UserDetailPage() {
           {/* User ID */}
           <div className="space-y-2">
             <Label htmlFor="userId">사용자 ID</Label>
-            <Input
-              id="userId"
-              value={user.id}
-              disabled
-              className="bg-[#f5f5f5]"
-            />
+            <Input id="userId" value={user.id} disabled className="bg-[#f5f5f5]" />
           </div>
         </div>
       </div>
