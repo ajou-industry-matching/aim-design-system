@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, FileText, Users, Megaphone } from "lucide-react"
+import { LayoutDashboard, FileText, Users, Megaphone, Database } from "lucide-react"
 
 const navItems = [
   {
@@ -25,6 +25,11 @@ const navItems = [
     title: "포트폴리오 관리",
     href: "/admin/portfolios",
     icon: FileText,
+  },
+  {
+    title: "크롤링 데이터 관리",
+    href: "/admin/crawled-projects",
+    icon: Database,
   },
 ]
 
