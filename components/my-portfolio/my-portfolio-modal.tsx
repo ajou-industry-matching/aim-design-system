@@ -12,77 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-
-/** 크롤링된 프로젝트에 부여되는 이수 구분 태그 */
-const PROJECT_CATEGORIES = [
-  "소프트웨어",
-  "사이버보안",
-  "AI융합",
-  "미디어",
-  "자기주도연구",
-  "자기주도프로젝트",
-] as const;
-
-type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
-
-interface CrawledProject {
-  id: string;
-  thumbnail: string;
-  title: string;
-  category: ProjectCategory;
-  /** 이미 내 포트폴리오로 복사된 프로젝트 여부 */
-  isImported: boolean;
-}
-
-/**
- * 목업 데이터
- * TODO: 크롤링 데이터 API 연동 시 교체.
- * 실제 연동 시 서버에서 본인 프로젝트 여부를 검증한 결과만 내려받는다.
- */
-const mockCrawledProjects: CrawledProject[] = [
-  {
-    id: "crawled-1",
-    thumbnail: "https://picsum.photos/seed/ajou-capstone/800/600",
-    title: "캡스톤디자인 - 교내 중고거래 플랫폼",
-    category: "소프트웨어",
-    isImported: false,
-  },
-  {
-    id: "crawled-2",
-    thumbnail: "https://picsum.photos/seed/ajou-security/800/600",
-    title: "웹 취약점 자동 진단 도구 개발",
-    category: "사이버보안",
-    isImported: false,
-  },
-  {
-    id: "crawled-3",
-    thumbnail: "https://picsum.photos/seed/ajou-ai/800/600",
-    title: "LLM 기반 학사 상담 챗봇",
-    category: "AI융합",
-    isImported: true,
-  },
-  {
-    id: "crawled-4",
-    thumbnail: "https://picsum.photos/seed/ajou-media/800/600",
-    title: "인터랙티브 미디어 아트 전시 프로젝트",
-    category: "미디어",
-    isImported: false,
-  },
-  {
-    id: "crawled-5",
-    thumbnail: "https://picsum.photos/seed/ajou-research/800/600",
-    title: "그래프 신경망 기반 추천 알고리즘 연구",
-    category: "자기주도연구",
-    isImported: false,
-  },
-  {
-    id: "crawled-6",
-    thumbnail: "https://picsum.photos/seed/ajou-project/800/600",
-    title: "아주대 학식 알리미 모바일 앱",
-    category: "자기주도프로젝트",
-    isImported: false,
-  },
-];
+import { mockCrawledProjects } from "@/lib/crawled-projects";
 
 interface MyPortfolioModalProps {
   open: boolean;
@@ -100,9 +30,7 @@ interface MyPortfolioModalProps {
  */
 export function MyPortfolioModal({ open, onOpenChange }: MyPortfolioModalProps) {
   const [query, setQuery] = useState("");
-  const [importedIds, setImportedIds] = useState<string[]>(
-    mockCrawledProjects.filter((project) => project.isImported).map((project) => project.id)
-  );
+  const [importedIds, setImportedIds] = useState<number[]>([]);
 
   // 제목 기준 검색
   const filteredProjects = useMemo(() => {
@@ -113,7 +41,7 @@ export function MyPortfolioModal({ open, onOpenChange }: MyPortfolioModalProps) 
     );
   }, [query]);
 
-  const handleImport = (id: string) => {
+  const handleImport = (id: number) => {
     setImportedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
@@ -155,14 +83,16 @@ export function MyPortfolioModal({ open, onOpenChange }: MyPortfolioModalProps) 
           {filteredProjects.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {filteredProjects.map((project) => {
-                const isImported = importedIds.includes(project.id);
+                const isImported = importedIds.includes(
+                  project.crawledProjectId
+                );
 
                 return (
-                  <div key={project.id} className="flex flex-col">
+                  <div key={project.crawledProjectId} className="flex flex-col">
                     {/* 썸네일 */}
                     <div className="relative aspect-[360/203] w-full overflow-hidden rounded-t-xl border border-b-0 border-[#e5e5e5]">
                       <Image
-                        src={project.thumbnail}
+                        src={project.representativeImage}
                         alt={project.title}
                         fill
                         sizes="(max-width: 640px) 100vw, 320px"
@@ -192,7 +122,9 @@ export function MyPortfolioModal({ open, onOpenChange }: MyPortfolioModalProps) 
                         </div>
                       ) : (
                         <Button
-                          onClick={() => handleImport(project.id)}
+                          onClick={() =>
+                            handleImport(project.crawledProjectId)
+                          }
                           className="h-[36px] w-full rounded-lg bg-[#004a9c] text-[13px] font-medium text-white hover:bg-[#004a9c]/90"
                         >
                           <Plus className="h-4 w-4" />
