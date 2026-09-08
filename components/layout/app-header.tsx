@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { User, LogOut } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { MyPortfolioModal } from "@/components/my-portfolio/my-portfolio-modal";
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -13,6 +14,7 @@ export function AppHeader() {
   // Mock login state - set to true to test logged-in UI
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
+  const [showMyPortfolio, setShowMyPortfolio] = useState(false);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -190,13 +192,16 @@ export function AppHeader() {
                         >
                           내 프로필
                         </Link>
-                        <Link
-                          href="/my-portfolio"
-                          className="block px-3 py-2 text-[14px] text-[#1a1a1a] hover:bg-[#f5f5f5] rounded-md transition-colors"
-                          onClick={() => setShowProfile(false)}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowProfile(false);
+                            setShowMyPortfolio(true);
+                          }}
+                          className="block w-full text-left px-3 py-2 text-[14px] text-[#1a1a1a] hover:bg-[#f5f5f5] rounded-md transition-colors"
                         >
                           내 포트폴리오
-                        </Link>
+                        </button>
                         <Link
                           href="/settings"
                           className="block px-3 py-2 text-[14px] text-[#1a1a1a] hover:bg-[#f5f5f5] rounded-md transition-colors"
@@ -229,6 +234,12 @@ export function AppHeader() {
           </div>
         </div>
       </div>
+
+      {/* 내 포트폴리오 모달 */}
+      <MyPortfolioModal
+        open={showMyPortfolio}
+        onOpenChange={setShowMyPortfolio}
+      />
     </header>
   );
 }
